@@ -1,4 +1,6 @@
 clone_tools
 ===========
 
-directory clone tools
+Directory clone tools series(MAYBE?)
+
+Windows Share folder clone tool
