@@ -36,7 +36,7 @@ class PathDialog:
 	
 	def write_path_file(self, event=None):
 		path_file = open('path.txt', 'w')
-		path_file.write(self.path_entry.get())
+		path_file.write(self.path_entry.get().rstrip())
 
 		self.cancel()
 	
@@ -118,4 +118,5 @@ connect_path(drive_letter, path)
 get_files(drive_letter, get_build_id(path), '*')
 
 disconnect_path(drive_letter)
+os.system('pause')
 
