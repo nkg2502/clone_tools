@@ -13,6 +13,7 @@ class PathDialog:
 		# key bind
 		root.bind('<Return>', self.write_path_file)
 		root.bind('<Escape>', self.exit)
+		root.protocol('WM_DELETE_WINDOW', self.exit)
 
 		frame = Frame(root)
 		frame.pack(fill=BOTH, expand=1)
