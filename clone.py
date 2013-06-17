@@ -7,12 +7,12 @@ class PathDialog:
 
 	def __init__(self, root):
 
-		root.geometry('1000x100')
+		root.geometry('550x60')
 		root.resizable(0, 0)
 
 		# key bind
 		root.bind('<Return>', self.write_path_file)
-		root.bind('<Escape>', self.cancel)
+		root.bind('<Escape>', self.exit)
 
 		frame = Frame(root)
 		frame.pack(fill=BOTH, expand=1)
@@ -25,8 +25,8 @@ class PathDialog:
 
 		path_entry.pack(side=TOP, fill=X)
 
-		Button(frame, text='Cancel', font='Consolas 10', command=self.cancel).pack(side=RIGHT)
-		Button(frame, text='  OK  ', font='Consolas 10', command=self.write_path_file).pack(side=RIGHT)
+		Button(frame, text='Cancel', font='Consolas 14', command=self.exit).pack(side=RIGHT)
+		Button(frame, text='  OK  ', font='Consolas 14', command=self.write_path_file).pack(side=RIGHT)
 
 		self.root = root
 		self.path_entry = path_entry
@@ -53,6 +53,9 @@ class PathDialog:
 
 	def cancel(self, event=None):
 		self.root.destroy()
+
+	def exit(self, event=None):
+		sys.exit(0)
 
 # use command 'net use'
 def connect_path(drive_letter, path):
