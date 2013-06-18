@@ -1,7 +1,16 @@
 import string
+from xml.dom.minidom import *
 import os
 import glob
 from Tkinter import *
+
+FILE_LIST = ['download_file', 'file_ref']
+
+class FileElement:
+	ELEMENT_LIST = ['file_name', 'file_path']
+
+class BuildElement:
+	ELEMENT_LIST = ['name', 'role', 'chipset', 'build_id', 'windows_root_path']
 
 class PathDialog:
 
@@ -94,7 +103,7 @@ def get_drive_letter():
 	return None
 
 def get_files(dst, src, files):
-	cmd = 'robocopy {} {} {} /e'.format(dst, src, files)
+	cmd = 'robocopy {} {} {} /e /lev:1 /w:15 /v /fp /eta /tee /log+:download.log /njh'.format(dst, src, files)
 	os.system(cmd)
 
 # MAIN
@@ -115,7 +124,50 @@ os.mkdir(get_build_id(path))
 
 connect_path(drive_letter, path)
 
-get_files(drive_letter, get_build_id(path), '*')
+#get_files(drive_letter, get_build_id(path), '*')
+get_files(drive_letter, get_build_id(path), 'contents.xml')
+
+
+dom = parse(os.path.join(get_build_id(path), 'contents.xml'))
+
+nodeList = dom.getElementsByTagName('build')
+
+build_flat = []
+print nodeList
+
+for i in nodeList:
+	if i.childNodes:
+		build = {}
+		build_flat.append(build)
+		for elem in BuildElement.ELEMENT_LIST:
+			if i.getElementsByTagName(elem):
+				build[elem] = i.getElementsByTagName(elem)[0].firstChild.data
+
+		if not len(build):
+			build_flat.remove(build)
+
+		for l in FILE_LIST:
+			build[l] = []
+			for f in i.getElementsByTagName(l):
+				download_file = {}
+				for file_elem in FileElement.ELEMENT_LIST:
+					if f.getElementsByTagName(file_elem):
+						download_file[file_elem] = f.getElementsByTagName(file_elem)[0].firstChild.data
+				build[l].append(download_file)
+
+
+
+
+for i in build_flat:
+	for elem in BuildElement.ELEMENT_LIST:
+		print elem + ':' + i[elem]
+	for elem in FILE_LIST:
+		for l in i[elem]:
+			print elem + ':' + os.path.normcase(os.path.join(l['file_path'], l['file_name']))
+			print os.path.normcase(os.path.join(i['windows_root_path'], l['file_path'], l['file_name']))
+			
+	
+
 
 disconnect_path(drive_letter)
 os.system('pause')
