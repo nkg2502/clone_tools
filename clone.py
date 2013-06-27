@@ -94,7 +94,7 @@ def get_drive_letter():
 	return None
 
 def get_files(dst, src, files):
-	cmd = 'robocopy {} {} {} /e'.format(dst, src, files)
+	cmd = 'robocopy {} {} {} /e /tee /fp /eta /log:download.log /w:5'.format(dst, src, files)
 	os.system(cmd)
 
 # MAIN
