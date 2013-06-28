@@ -111,7 +111,10 @@ if '' == path:
 	sys.exit(2)
 
 print path
-os.mkdir(get_build_id(path))
+try:
+	os.mkdir(get_build_id(path))
+except OSError:
+	pass
 
 connect_path(drive_letter, path)
 
