@@ -1,8 +1,12 @@
 import string
 import os
 import glob
+import zlib
+from time import strftime, localtime
 from Tkinter import *
+from datetime import datetime
 
+# GUI interface 
 class PathDialog:
 
 	def __init__(self, root):
@@ -58,16 +62,6 @@ class PathDialog:
 	def exit(self, event=None):
 		sys.exit(0)
 
-# use command 'net use'
-def connect_path(drive_letter, path):
-	cmd = 'net use {} {}'.format(drive_letter, path)
-	os.system(cmd)
-
-# use command 'net use'
-def disconnect_path(drive_letter):
-	cmd = 'net use {} /delete'.format(drive_letter)
-	os.system(cmd)
-
 def get_path():
 
 	path = ''
@@ -79,29 +73,28 @@ def get_path():
 	return path
 
 def get_build_id(path):
-	return path.split('\\')[-1]
+	for raw_build_id in path.split('\\')[::-1]:
+		build_id = raw_build_id.rstrip()
+		
+		if build_id:
+			return build_id
+	
+	raise ValueError
 
-
-# find drive letter
-def get_drive_letter():
-
-	# string.ascii_uppercase[-1:1:-1] == 'ZYXWVUTSRQPONMLKJIHGFEDC'
-	for letter in string.ascii_uppercase[-1:1:-1]:
-		is_used_letter = glob.glob(letter + ':')
-		if not is_used_letter:
-			return letter + ':'
-
-	return None
-
-def get_files(dst, src, files):
-	cmd = 'robocopy {} {} {} /e /tee /fp /eta /log:download.log /w:5'.format(dst, src, files)
+# use robocopy
+def get_files(src, dst, files = '*', depth = 0, log_file_name = 'download.log'):
+	cmd = 'robocopy {} {} {} {} /e /w:5 /v /fp /eta /tee /log+:{}'.format(src, dst, files, '/lev:' + str(depth) if 0 < depth else '', log_file_name)
+	# /njh /njs
 	os.system(cmd)
 
+# calculate CRC32
+def crc(fileName):
+	prev = 0
+	for eachLine in open(fileName,"rb"):
+		prev = zlib.crc32(eachLine, prev)
+	return "%X" % (prev & 0xFFFFFFFF)
+
 # MAIN
-drive_letter = get_drive_letter()
-if None == drive_letter:
-	print 'Fatal: EVERY DRIVE LETTER USED'
-	sys.exit(1)
 
 PathDialog(Tk())
 
@@ -116,10 +109,24 @@ try:
 except OSError:
 	pass
 
-connect_path(drive_letter, path)
+log_file_name = strftime("%Y.%m.%d[%H.%M.%S].log", localtime())
+get_files(path, get_build_id(path), '*', 0, log_file_name)
 
-get_files(drive_letter, get_build_id(path), '*')
+# CRC32 checksum
+print 'Calculating checksum...'
+start_time = datetime.now()
+checksum_file = open(log_file_name + '.checksum', 'w')
+for root_path, subdirs, files in os.walk('.'):
 
-disconnect_path(drive_letter)
+	'''
+	for candidate in subdirs:
+		if '.' == candidate[0]:
+			subdirs.remove(candidate)
+	'''
+
+	for file_name in files:
+		checksum_file.writelines([os.path.join(root_path, file_name), '\t', crc(os.path.join(root_path, file_name)), '\n'])
+
+print 'Finished: {}'.format(datetime.now() - start_time)
 os.system('pause')
 
