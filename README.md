@@ -8,10 +8,8 @@ Windows Share folder clone tool(Python)
 * Run
  * python clone.py
  * double click
- * refer "path.txt"
+ * refer to "path.txt" for path
 
 * Internal
- * use "net use" command
  * use "robocopy" command
- * use a drive letter
 
