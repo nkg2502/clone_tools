@@ -88,10 +88,10 @@ def get_files(src, dst, files = '*', depth = 0, log_file_name = 'download.log'):
 	os.system(cmd)
 
 # calculate CRC32
-def crc(fileName):
+def crc(file_name):
 	prev = 0
-	for eachLine in open(fileName,"rb"):
-		prev = zlib.crc32(eachLine, prev)
+	for line in open(file_name,"rb"):
+		prev = zlib.crc32(line, prev)
 	return "%X" % (prev & 0xFFFFFFFF)
 
 # MAIN
@@ -115,14 +115,13 @@ get_files(path, get_build_id(path), '*', 0, log_file_name)
 # CRC32 checksum
 print 'Calculating checksum...'
 start_time = datetime.now()
-checksum_file = open(log_file_name + '.checksum', 'w')
+checksum_file = open(log_file_name + '.checksum.txt', 'w')
+
 for root_path, subdirs, files in os.walk('.'):
 
-	'''
 	for candidate in subdirs:
-		if '.' == candidate[0]:
+		if '.git' in candidate:
 			subdirs.remove(candidate)
-	'''
 
 	for file_name in files:
 		checksum_file.writelines([os.path.join(root_path, file_name), '\t', crc(os.path.join(root_path, file_name)), '\n'])
