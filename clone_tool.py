@@ -88,6 +88,7 @@ def get_files(src, dst, files = '*', depth = 0, log_file_name = 'download.log'):
 	os.system(cmd)
 
 # calculate CRC32
+# reference : http://stackoverflow.com/questions/1742866/compute-crc-of-file-in-python
 def crc(file_name):
 	prev = 0
 	for line in open(file_name,"rb"):
